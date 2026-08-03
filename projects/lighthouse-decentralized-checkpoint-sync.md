@@ -114,8 +114,7 @@ This requires nodes to collect and serve the snapshot data, and likely requires 
 
 Design the protocol for fetching the `BeaconState` in verifiable chunks. The proposed approach is:
 
-- Fixed-size chunks (e.g., 256KB) rather than logical field boundaries. The beacon state is dozens of MB — not GBs — so it can be transferred, but not in a single chunk that would monopolize bandwidth.
-- Each chunk carries a Merkle multi-proof against the state root, allowing independent verification.
+- Chunk by top-level `BeaconState` fields (and possibly sub-chunk large fields like `validators` by index range). This aligns with SSZ's natural Merkle tree structure, allowing each chunk to be verified with standard Merkle proofs against known generalized indices.
 - Parallel fetching from multiple peers, with immediate rejection and re-request of any chunk that fails verification.
 - The chunking strategy should align with SSZ's natural tree layout to avoid extra hashing.
 
@@ -127,13 +126,17 @@ Design the protocol for fetching the `BeaconState` in verifiable chunks. The pro
 
 ## Roadmap
 
-| Phase | Timeline | Deliverables |
-|-------|----------|--------------|
-| Phase 1a | Week 7 – 8 | Implement post-sync backfill task; remove historical data gaps in `LightClientUpdate` and `SyncCommitteeBranch` storage |
-| Phase 1b | Week 8 – 10 | Implement on-demand fallback for `get_light_client_bootstrap` and `get_light_client_updates`; pass consensus-specs data collection tests |
-| Phase 2 | Week 10 – 12 | Design and prototype `LightClientBeaconSnapshot` endpoint (state root + Merkle proof) |
-| Phase 3 | Week 12 – 14 | Design beacon sync chunking protocol (fixed-size chunks with Merkle multi-proofs); prototype p2p endpoint |
-| Phase 4 | Week 14 – 16 | Integration testing: end-to-end trustless checkpoint sync; spec test compliance; documentation |
+
+| Phase    | Timeline     | Deliverables                                                                                                                             | Fellow(s) Responsible |
+| -------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| Phase 1a | Week 7 – 8   | Implement post-sync backfill task; remove historical data gaps in `LightClientUpdate` and `SyncCommitteeBranch` storage                  | Roheemah              |
+| Phase 1b | Week 8 – 11  | Implement on-demand fallback for `get_light_client_bootstrap` and `get_light_client_updates`; pass consensus-specs data collection tests | Roheemah, Aarish      |
+| Phase 2  | Week 10 – 12 | Design and prototype `LightClientBeaconSnapshot` endpoint (state root + Merkle proof)                                                    | Yee                   |
+| Phase 3  | Week 12 – 14 | Design beacon sync chunking protocol (fixed-size chunks with Merkle multi-proofs); prototype p2p endpoint                                | Aarish                |
+| Phase 4  | Week 14 – 16 | Integration testing: end-to-end trustless checkpoint sync; spec test compliance; documentation                                           | Roheemah, Aarish, Yee |
+
+
+
 
 ## Possible challenges
 
